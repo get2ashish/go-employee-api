@@ -1,32 +1,20 @@
 package main
 
 import (
-	"errors"
 	"net/http"
 
+	"github.com/get2ashish/go-employee-api/models"
+	"github.com/get2ashish/go-employee-api/service"
 	"github.com/gin-gonic/gin"
 )
 
-type book struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	Author   string `json:"author"`
-	Quantity int    `json:"quantity"`
-}
-
-var books = []book{
-	{ID: "1", Title: "In Search of Lost Time", Author: "Marcel Proust", Quantity: 2},
-	{ID: "2", Title: "The Great Gatsby", Author: "F. Scott Fitzgerald", Quantity: 5},
-	{ID: "3", Title: "War and Peace", Author: "Leo Tolstoy", Quantity: 6},
-}
-
 func getBooks(context *gin.Context) {
-	context.IndentedJSON(http.StatusOK, books)
+	context.IndentedJSON(http.StatusOK, service.GetAllBooks())
 }
 
 func getBookById(context *gin.Context) {
 	id := context.Param("id")
-	bookById, error := filterBookById(id)
+	bookById, error := service.FilterBookById(id)
 	if error != nil {
 		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
 		return
@@ -34,32 +22,22 @@ func getBookById(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, bookById)
 }
 
-func filterBookById(id string) (*book, error) {
-	for i, b := range books {
-		if b.ID == id {
-			return &books[i], nil
-		}
-	}
-	return nil, errors.New("book not found")
-}
-
 func createBook(context *gin.Context) {
-	var newBook book
-	error := context.BindJSON(&newBook)
+	var bookPayload models.Book
+	error := context.BindJSON(&bookPayload)
 
 	if error != nil {
 		return
 	}
 
-	books = append(books, newBook)
-	context.IndentedJSON(http.StatusCreated, newBook)
+	service.CreateBook(bookPayload)
+	context.IndentedJSON(http.StatusCreated, bookPayload)
 }
 
 func main() {
-	//https://www.youtube.com/watch?v=bj77B59nkTQ
 	router := gin.Default()
 	router.GET("/books", getBooks)
 	router.GET("/books/:id", getBookById)
 	router.POST("/books", createBook)
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }
