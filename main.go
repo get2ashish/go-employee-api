@@ -8,36 +8,36 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getBooks(context *gin.Context) {
-	context.IndentedJSON(http.StatusOK, service.GetAllBooks())
+func getAllEmployees(context *gin.Context) {
+	context.IndentedJSON(http.StatusOK, service.GetAllEmployees())
 }
 
-func getBookById(context *gin.Context) {
+func getEmployeeById(context *gin.Context) {
 	id := context.Param("id")
-	bookById, error := service.FilterBookById(id)
+	employee, error := service.FindEmployeeById(id)
 	if error != nil {
-		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "employee not found"})
 		return
 	}
-	context.IndentedJSON(http.StatusOK, bookById)
+	context.IndentedJSON(http.StatusOK, employee)
 }
 
-func createBook(context *gin.Context) {
-	var bookPayload models.Book
-	error := context.BindJSON(&bookPayload)
+func createEmployee(context *gin.Context) {
+	var payload models.Employee
+	error := context.BindJSON(&payload)
 
 	if error != nil {
 		return
 	}
 
-	service.CreateBook(bookPayload)
-	context.IndentedJSON(http.StatusCreated, bookPayload)
+	service.CreateEmployee(payload)
+	context.IndentedJSON(http.StatusCreated, payload)
 }
 
 func main() {
 	router := gin.Default()
-	router.GET("/books", getBooks)
-	router.GET("/books/:id", getBookById)
-	router.POST("/books", createBook)
+	router.GET("/employee", getAllEmployees)
+	router.GET("/employee/:id", getEmployeeById)
+	router.POST("/employee", createEmployee)
 	router.Run(":8080")
 }
